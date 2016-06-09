@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet GeoJSON Example</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <style> 
+        html, body { height:100%; }
+        #map { height: 100%; width: 100% } 
+    </style> 
+</head>
+<body>
+	<div id="map"></div>
+	<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+	<script src="TileLayer.GeoJSON.js"></script>
+    
+	<script>
+		var map = L.map('map').setView([25.0399665,121.5650643], 16);
+        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ',
+			id: 'osm'
+		}).addTo(map);
+
+
+var style = {
+    "clickable": true,
+    "color": "#00D",
+    "fillColor": "#00D",
+    "weight": 1.0,
+    "opacity": 0.3,
+    "fillOpacity": 0.2
+};
+var hoverStyle = {
+    "fillOpacity": 0.5
+};
+
+var geojsonTileLayer = new L.TileLayer.GeoJSON( '/drinking_water/{z}/{x}/{y}.json', 
+        {
+            clipTiles: true,
+            unique: function (feature) { return feature.id; }
+        }, {
+            style: style,
+            onEachFeature: function (feature, layer) {
+                if (feature.properties) {
+                    var popupString = '<div class="popup">';
+                    for (var k in feature.properties) {
+                        var v = feature.properties[k];
+                        popupString += k + ': ' + v + '<br />';
+                    }
+                    popupString += '</div>';
+                    layer.bindPopup(popupString);
+                }
+                if (!(layer instanceof L.Point)) {
+                    layer.on('mouseover', function () {
+                        layer.setStyle(hoverStyle);
+                    });
+                    layer.on('mouseout', function () {
+                        layer.setStyle(style);
+                    });
+                }
+            }
+        });
+map.addLayer(geojsonTileLayer);
+	</script>
+
+</body>
+</html>
